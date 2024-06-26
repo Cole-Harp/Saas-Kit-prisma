@@ -4,6 +4,7 @@ import { IntervalE } from '../types/enums';
 const configuration = {
   routes: [
     { title: 'Overview', link: '/dashboard/main', icon: Icons.Home },
+    { title: 'Planner', link: '/dashboard/planner/my-todos', icon: Icons.Home },
     { title: 'Todos', link: '/dashboard/todos/create', icon: Icons.Laptop },
     { title: 'AI', link: '/dashboard/ai', icon: Icons.Bot },
     { title: 'Settings', link: '/dashboard/settings/profile', icon: Icons.Settings }
