@@ -9,15 +9,15 @@ import { GameDayPlanner } from './PlannerCard';
 
 // Your existing components remain unchanged
 
-const MyDayPlannerWithDndProvider = ({ todos }) => {
+const MyDayPlannerWithDndProvider = ({ todos, dayPlanner }) => {
     return (
         <DndProvider backend={HTML5Backend}>
             <div className='flex'>
-                <div className='w-1/2'>
+                <div className='w-1/3'>
                     <MyTodos todos={todos} />
                 </div>
-                <div className='w-1/2'>
-                    <GameDayPlanner topTodos={undefined} dayPlannerRow={undefined} />
+                <div className='w-2/3'>
+                    <GameDayPlanner dayPlanner={dayPlanner} />
                 </div>
             </div>
         </DndProvider>

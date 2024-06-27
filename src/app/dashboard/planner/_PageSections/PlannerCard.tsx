@@ -5,66 +5,77 @@ import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils/helpers';
 import { Icons } from '@/components/Icons';
-import { Todo, DayPlannerRow } from '@prisma/client';
+import { Todo, DayPlannerRow, DayPlanner } from '@prisma/client';
+import { updateTodoIndexAndPlannerRow } from '@/lib/API/Database/planner/mutations';
 
-export const GameDayPlanner = ({topTodos: Todo, dayPlannerRow: DayPlannerRow}) => {
-
-  const num_high_priority_todos = 3;
+export const GameDayPlanner = ({ dayPlanner }) => {
+  const dayPlannerRows: DayPlannerRow[] = dayPlanner.dayPlannerRow; // Assuming dayPlanner object has a rows property
 
   return (
     <>
-      <div className='grid grid-cols-4'>
-        {Array.from({ length: 12 }).map((_, index) => (
-          <div key={index} className='col-span-1 inline-flex'>
-            <PlannerCard />
-            <Icons.Lock />
-          </div>
-        ))}
-      </div>
+      {dayPlannerRows.map((row: DayPlannerRow) => (
+        <div key={row.id} className='py-2'>
+          <div className="priority text-center">{row.title}</div>
+          {renderDayPlannerRow(row, row.todos ?? [])}
+        </div>
+      ))}
     </>
   );
-}
+};
 
-function PlannerCard() {
-  const [todo, setTodo] = useState(null);  // State to track the todo
+const renderDayPlannerRow = (row: DayPlannerRow, todos) => {
+  return (
+    <div className='grid grid-cols-4'>
+      {Array.from({ length: row.num_cols }).map((_, index) => (
+        <div key={index} className='col-span-1 inline-flex'>
+          <PlannerCard todo={todos[index]} index={index} rowId={row.id} />
+          <Icons.Lock />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const PlannerCard = ({ todo, index, rowId }) => {
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(todo || null);
+  
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "TODO",
-    drop: (item, monitor) => {
-      setTodo(item);  // Set the dropped todo item to the state
+    drop: async (item: Todo) => {
+      setSelectedTodo(item);
+      await updateTodoIndexAndPlannerRow(item.id, index, rowId);
     },
-    collect: monitor => ({
+    collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
-  }));
+  }), [todo]);
 
   return (
-    <div ref={drop} style={{ background: isOver ? 'lightgreen' : 'white' }}>
-      {todo ? (
-        <>
-          <Card>
-      <CardHeader>
-        <CardTitle>{todo.title}</CardTitle>
-        <CardDescription>{todo.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Link
-          href={`/dashboard/todos/edit/${todo.id}`}
-          className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'mr-6')}
-        >
-          Edit
-        </Link>
-        {/* <Button onClick={Delete} variant="destructive">
-          Delete
-        </Button> */}
-      </CardContent>
-    </Card>
-        </>
+    <div ref={drop} className={`planner-card ${isOver ? 'highlight' : ''}`}>
+{selectedTodo ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{selectedTodo.title}</CardTitle>
+            <CardDescription>{selectedTodo.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link
+              href={`/dashboard/todos/edit/${selectedTodo.id}`}
+              className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'mr-6')}
+            >
+              Edit
+            </Link>
+            {/* <Button onClick={Delete} variant="destructive">
+              Delete
+            </Button> */}
+          </CardContent>
+        </Card>
       ) : (
-        <div className='p-2'>
+        <div className='p-2 border'>
           Drop a todo here
         </div>
       )}
     </div>
   );
-}
+};

@@ -15,6 +15,12 @@ const configuration = {
       { title: 'My Todos', link: '/dashboard/todos/my-todos' },
       { title: 'All Todos', link: '/dashboard/todos/list-todos' }
     ],
+    planner: [
+      { title: 'Create', link: '/dashboard/todos/create' },
+      { title: 'My Todos', link: '/dashboard/todos/my-todos' },
+      { title: 'All Todos', link: '/dashboard/todos/list-todos' },
+      { title: 'Edit Planner', link: '/dashboard/todos/list-todos' }
+    ],
     settings: [
       { title: 'Profile', link: '/dashboard/settings/profile' },
       { title: 'Billing', link: '/dashboard/settings/billing' },

@@ -15,6 +15,19 @@ export const todoFormSchema = z.object({
   })
 });
 
+export const plannerSettingsFormSchema = z.object({
+  title: z
+    .string({
+      required_error: 'Please enter a Title.'
+    })
+    .max(30, {
+      message: 'Title must not be longer than 30 characters.'
+    }),
+  description: z.string().min(8, {
+    message: 'Description Must be at least 8 characters'
+  })
+});
+
 export const DisplayNameFormSchema = z.object({
   display_name: z
     .string()
@@ -44,4 +57,5 @@ export const UpdatePasswordFormSchema = z.object({
 export type DisplayNameFormValues = z.infer<typeof DisplayNameFormSchema>;
 export type EmailFormValues = z.infer<typeof EmailFormSchema>;
 export type UpdatePasswordFormValues = z.infer<typeof UpdatePasswordFormSchema>;
+export type plannerSettingsFormValues = z.infer<typeof plannerSettingsFormSchema>;
 export type todoFormValues = z.infer<typeof todoFormSchema>;

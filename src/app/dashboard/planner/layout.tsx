@@ -6,7 +6,7 @@ import { LayoutProps } from '@/lib/types/types';
 
 export default function Layout({ children }: LayoutProps) {
   const {
-    subroutes: { todos }
+    subroutes: { planner }
   } = configuration;
 
   return (
@@ -14,7 +14,7 @@ export default function Layout({ children }: LayoutProps) {
       <div>
         <TodosHeader />
         <Separator className="my-6" />
-        <TodosNav items={todos} />
+        <TodosNav items={planner} />
 
         <div>{children}</div>
       </div>

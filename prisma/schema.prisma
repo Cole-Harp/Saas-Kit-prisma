@@ -79,6 +79,7 @@ model Subscription {
 
 model Todo {
   id          Int       @id @default(autoincrement())
+  index       Int?
   title       String?   @db.VarChar
   description String?   @db.VarChar
   dueDate     DateTime? // Field for due date
@@ -92,13 +93,14 @@ model Todo {
   subtodos    SubTodo[]
   dayPlanner  DayPlanner? @relation(fields: [dayPlannerId], references: [id])
   dayPlannerId Int?
-  dayPlannerRow DayPlannerRow[] // Add this line to establish the relation
+  dayPlannerRow DayPlannerRow[] @relation("DayPlannerToToDo")
 
   @@map(name: "todos")
 }
 
 model SubTodo {
   id          Int       @id @default(autoincrement())
+  index       Int?
   title       String?   @db.VarChar
   description String?   @db.VarChar
   dueDate     DateTime? // Field for due date
@@ -115,25 +117,25 @@ model SubTodo {
 }
 
 model DayPlanner {
-  id          Int       @id @default(autoincrement())
-  date        DateTime  @unique
+  id          Int            @id @default(autoincrement())
+  date        DateTime       @unique
   events      Event[]
-  user        User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user        User?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String?
   todos       Todo[]
-  dayPlannerRow DayPlannerRow[] // Add this line to establish the relation
+  dayPlannerRow DayPlannerRow[] @relation("DayPlannerToDayPlannerRow") // Establish the relation with a custom name
 
   @@map(name: "day_planners")
 }
 
 model DayPlannerRow {
-  id          Int       @id @default(autoincrement())
-  title      String?   @db.VarChar
+  id          Int                @id @default(autoincrement())
+  title       String?            @db.VarChar
   num_cols    Int
   num_rows    Int
   category    PlannerRowCategory
-  dayplanner      DayPlanner[]
-  todos       Todo[]
+  dayPlanner  DayPlanner[]       @relation("DayPlannerToDayPlannerRow") // Use the same custom name for back-relation
+  todos       Todo[]   @relation("DayPlannerToToDo") // Use the same custom name for back-relation
 
   @@map(name: "day_planner_rows")
 }
