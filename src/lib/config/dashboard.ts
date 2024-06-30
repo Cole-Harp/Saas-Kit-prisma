@@ -16,10 +16,10 @@ const configuration = {
       { title: 'All Todos', link: '/dashboard/todos/list-todos' }
     ],
     planner: [
-      { title: 'Create', link: '/dashboard/todos/create' },
-      { title: 'My Todos', link: '/dashboard/todos/my-todos' },
-      { title: 'All Todos', link: '/dashboard/todos/list-todos' },
-      { title: 'Edit Planner', link: '/dashboard/todos/list-todos' }
+      { title: 'Create', link: '/dashboard/planner/create' },
+      { title: 'My Todos', link: '/dashboard/planner/my-todos' },
+      { title: 'All Todos', link: '/dashboard/planner/list-todos' },
+      { title: 'Edit Planner', link: '/dashboard/planner/edit-planner' }
     ],
     settings: [
       { title: 'Profile', link: '/dashboard/settings/profile' },

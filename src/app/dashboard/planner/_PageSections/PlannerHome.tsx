@@ -17,7 +17,7 @@ const MyDayPlannerWithDndProvider = ({ todos, dayPlanner }) => {
                     <MyTodos todos={todos} />
                 </div>
                 <div className='w-2/3'>
-                    <GameDayPlanner dayPlanner={dayPlanner} />
+                    <GameDayPlanner initDayPlanner={dayPlanner} />
                 </div>
             </div>
         </DndProvider>

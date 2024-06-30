@@ -54,6 +54,13 @@ export const UpdatePasswordFormSchema = z.object({
     })
 });
 
+export const plannerRowConfigFormSchema = z.object({
+  category: z.enum(['Work', 'Personal', 'Health', 'Other'], {
+    required_error: 'Please select a category.'
+  })
+});
+
+export type PlannerRowConfigFormValues = z.infer<typeof plannerRowConfigFormSchema>;
 export type DisplayNameFormValues = z.infer<typeof DisplayNameFormSchema>;
 export type EmailFormValues = z.infer<typeof EmailFormSchema>;
 export type UpdatePasswordFormValues = z.infer<typeof UpdatePasswordFormSchema>;

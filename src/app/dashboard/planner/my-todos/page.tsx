@@ -7,7 +7,7 @@ import { GetDayPlanner } from '@/lib/API/Database/planner/queries';
 
 export default async function ListTodos() {
   const todos = await GetTodosByUserId();
-  const dayPlanner = await GetDayPlanner();
+  const dayPlanner = await GetDayPlanner(new Date());
 
   return (
     <MyDayPlannerWithDndProvider todos={todos} dayPlanner={dayPlanner} />

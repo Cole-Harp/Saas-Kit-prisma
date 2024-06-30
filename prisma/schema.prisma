@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -54,6 +54,8 @@ model User {
   subtodos           SubTodo[]     // Add this line to establish the relation
   dayPlanner         DayPlanner[]  // Add this line to establish the relation
   events             Event[]       // Add this line to establish the relation
+  dayPlannerRow      DayPlannerRow[] // Add this line to establish the relation
+  dayPlannerConfig   DayPlannerConfig[] // Add this line to establish the relation
 
   @@map(name: "users")
 }
@@ -131,14 +133,30 @@ model DayPlanner {
 model DayPlannerRow {
   id          Int                @id @default(autoincrement())
   title       String?            @db.VarChar
+  index       Int               @default(autoincrement()) 
   num_cols    Int
   num_rows    Int
   category    PlannerRowCategory
   dayPlanner  DayPlanner[]       @relation("DayPlannerToDayPlannerRow") // Use the same custom name for back-relation
   todos       Todo[]   @relation("DayPlannerToToDo") // Use the same custom name for back-relation
+  user        User?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String?
+
 
   @@map(name: "day_planner_rows")
 }
+
+model DayPlannerConfig {
+  id          Int                @id @default(autoincrement())
+  category    String
+  user        User?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String?
+  index       Int
+
+
+  @@map(name: "day_planner_configs")
+}
+
 
 model Event {
   id          Int       @id @default(autoincrement())

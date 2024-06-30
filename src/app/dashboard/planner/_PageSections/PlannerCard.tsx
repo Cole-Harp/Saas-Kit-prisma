@@ -1,37 +1,105 @@
 import { useDrop } from 'react-dnd';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils/helpers';
 import { Icons } from '@/components/Icons';
 import { Todo, DayPlannerRow, DayPlanner } from '@prisma/client';
-import { updateTodoIndexAndPlannerRow } from '@/lib/API/Database/planner/mutations';
+import { CreateDayPlanner, updateTodoIndexAndPlannerRow } from '@/lib/API/Database/planner/mutations';
+import { addDays, startOfDay } from 'date-fns'; // For date manipulation
+import { GetDayPlanner } from '@/lib/API/Database/planner/queries'; // Assuming this is the correct import path
 
-export const GameDayPlanner = ({ dayPlanner }) => {
-  const dayPlannerRows: DayPlannerRow[] = dayPlanner.dayPlannerRow; // Assuming dayPlanner object has a rows property
+export const GameDayPlanner = ({initDayPlanner}) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [dayPlanner, setDayPlanner] = useState(initDayPlanner);
+
+  const fetchDayPlanner = useCallback(async () => {
+    let planner = await GetDayPlanner(startOfDay(currentDate));
+
+    setDayPlanner(planner);
+  }, [currentDate]);
+
+  useEffect(() => {
+    fetchDayPlanner();
+  }, [fetchDayPlanner]);
+
+  const goPreviousDay = () => setCurrentDate(prevDate => addDays(prevDate, -1));
+  const goNextDay = () => setCurrentDate(prevDate => addDays(prevDate, 1));
 
   return (
     <>
-      {dayPlannerRows.map((row: DayPlannerRow) => (
-        <div key={row.id} className='py-2'>
-          <div className="priority text-center">{row.title}</div>
-          {renderDayPlannerRow(row, row.todos ?? [])}
-        </div>
-      ))}
+      <div className="navigation">
+        <button onClick={goPreviousDay}>←</button>
+        <button onClick={goNextDay}>→</button>
+      </div>
+      {dayPlanner && dayPlanner.dayPlannerRow.map((row: DayPlannerRow) => (
+            <div key={row.id} className='py-2'>
+              <div className="text-center" ><PlannerTitle row={row} handleEditTitle={undefined}/></div>
+              <DisplayDayPlannerRow row={row} initialTodos={row.todos ?? []} />
+            </div>
+          ))}
     </>
   );
 };
 
-const renderDayPlannerRow = (row: DayPlannerRow, todos) => {
+const Arrow = ({ color }) => (
+  <div className={`mx-1 text-${color}`}>→</div>
+);
+
+
+
+const DisplayDayPlannerRow = ({ row, initialTodos }) => {
+  const [todos, setTodos] = useState(initialTodos);
+
+  const addTodoToEnd = useCallback((newTodo) => {
+    // Check if the newTodo already exists in the todos array or any other dayPlannerRow
+    const todoExists = todos.some((todo) => todo.id === newTodo.id);
+if (!todoExists) {
+      setTodos((prevTodos) => [...prevTodos, newTodo]);
+    }
+  }, [todos, row.id]);
+
+  const numCols = todos.length + 1; // Use a derived state instead of managing it separately
+
   return (
-    <div className='grid grid-cols-4'>
-      {Array.from({ length: row.num_cols }).map((_, index) => (
-        <div key={index} className='col-span-1 inline-flex'>
-          <PlannerCard todo={todos[index]} index={index} rowId={row.id} />
-          <Icons.Lock />
+    <div className={`inline-block`}>
+      <DropZone rowId={row.id} index={0} onDropTodo={addTodoToEnd} />
+      {todos.map((todo, index) => (
+        <div className='inline-flex' key={todo.id}> {/* It's better to use todo.id as key if unique */}
+          <div className='w-11/12'>
+            <PlannerCard todo={todo} index={index} rowId={row.id} />
+          </div>
+          {index < todos.length - 1 && ( // Improved conditional logic
+            <div className="w-1/12">
+              <Arrow color={todo.complete ? 'green' : 'gray'} />
+            </div>
+          )}
         </div>
       ))}
+    </div>
+  );
+};
+
+export default DisplayDayPlannerRow;
+
+
+// Updated DropZone to accept onDropTodo callback
+const DropZone = ({ rowId, index, onDropTodo }) => {
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: "TODO",
+    drop: async (item: Todo) => {
+      await updateTodoIndexAndPlannerRow(item.id, index, rowId);
+      onDropTodo(item); // Invoke the callback with the dropped todo
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }), [rowId, index, onDropTodo]); // Include onDropTodo in dependencies
+
+  return (
+    <div ref={drop} className={`planner-card ${isOver ? ' bg-green-50' : ''} inline-flex`}>
+      Drop a todo here
     </div>
   );
 };
@@ -79,3 +147,38 @@ const PlannerCard = ({ todo, index, rowId }) => {
     </div>
   );
 };
+
+const PlannerTitle = ({ row, handleEditTitle }) => {
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(row.title);
+  
+  const handleTitleChange = (e) => {
+    setTitle(e.target.value);
+  };
+  
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+  
+  const handleBlur = () => {
+    setIsEditing(false);
+    handleEditTitle(row.id, title);
+  };
+  
+  return (
+    <div key={row.id} className='py-2'>
+      {isEditing ? (
+        <input
+          type='text'
+          value={title}
+          onChange={handleTitleChange}
+          onBlur={handleBlur}
+          autoFocus
+        />
+      ) : (
+        <div className="text-center" onDoubleClick={handleDoubleClick}>{row.title}</div>
+      )}
+    </div>
+  );
+  }
